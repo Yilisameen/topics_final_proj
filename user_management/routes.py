@@ -1,7 +1,8 @@
 from flask import request, render_template, make_response, jsonify
 from datetime import datetime as dt
 from flask import current_app as app
-from .models import db, User
+from .models import db, User, Watchlist
+from sqlalchemy import and_
 
 #for test
 @app.route('/')
@@ -187,3 +188,42 @@ def fetch_user_identity():
         status = 'fail',
         info = 'uid missed'
     ), 200
+
+@app.route('/addItemToWatchlist/', methods=['GET', 'POST'])
+def add_item_to_watchlist():
+    uid = int(request.args.get('uid'))
+    item_id = int(request.args.get('item_id'))
+    if uid and item_id:
+        existing_record = Watchlist.query.filter(
+            and_(Watchlist.uid == uid,Watchlist.itemid == item_id)
+        ).first()
+        if existing_record:
+            return jsonify(
+                status = 'fail',
+                reason = 'recording already exist'
+            )
+        new_record = Watchlist(
+            uid = uid,
+            itemid = item_id,
+            created=dt.now()
+        )
+        db.session.add(new_record)
+        db.session.commit()
+    return jsonify(
+        status = 'success'
+    )
+
+@app.route('/getItemsInWatchlist/', methods=['GET'])
+def get_items_in_watchlist():
+    uid = int(request.args.get('uid'))
+    records = []
+    if uid:
+        all_records = db.session.query(Watchlist.itemid).filter(Watchlist.uid == uid).all()
+        for record in all_records:
+            print(record)
+            records.append(record.itemid)
+        return jsonify(
+            uid = uid,
+            records = records
+        )
+    

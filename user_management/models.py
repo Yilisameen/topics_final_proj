@@ -59,3 +59,33 @@ class User(db.Model):
 
     def __repr__(self):
         return '<User {}>'.format(self.username)
+
+
+class Watchlist(db.Model):
+    """Data model for user watchlist."""
+    __tablename__ = 'userwatchlist'
+    recordid = db.Column(
+        db.Integer,
+        primary_key=True
+    )
+    uid = db.Column(
+        db.Integer,
+        index=False,
+        unique=False,
+        nullable=False
+    )
+    itemid = db.Column(
+        db.Integer,
+        index=False,
+        unique=False,
+        nullable=False
+    )
+    created = db.Column(
+        db.DateTime,
+        index=False,
+        unique=False,
+        nullable=False
+    )
+
+    def __repr__(self):
+        return '<User {}, Item {}>'.format(self.uid, self.itemid)
