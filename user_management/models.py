@@ -3,8 +3,8 @@ from . import db
 # for test
 class User(db.Model):
     """Data model for user accounts."""
-    __tablename__ = 'flasksqlalchemytutorialusers'
-    id = db.Column(
+    __tablename__ = 'useraccount'
+    uid = db.Column(
         db.Integer,
         primary_key=True
     )
@@ -20,6 +20,18 @@ class User(db.Model):
         unique=True,
         nullable=False
     )
+    password = db.Column(
+        db.String(30),
+        index=False,
+        unique=False,
+        nullable=False
+    )
+    credibility = db.Column(
+        db.Float,
+        index=False,
+        unique=False,
+        nullable=False
+    )
     created = db.Column(
         db.DateTime,
         index=False,
@@ -33,6 +45,12 @@ class User(db.Model):
         nullable=True
     )
     admin = db.Column(
+        db.Boolean,
+        index=False,
+        unique=False,
+        nullable=False
+    )
+    suspend = db.Column(
         db.Boolean,
         index=False,
         unique=False,
