@@ -3,11 +3,15 @@ from datetime import datetime as dt
 from flask import current_app as app
 from .models import db, User, Watchlist
 from sqlalchemy import and_
+import requests
 
 #for test
 @app.route('/')
 def hello():
-    return 'Hello, World!'
+    return jsonify(
+        id = '5',
+        name = 'name'
+    )
 
 def is_user_admin_or_suspend(uid, op):
     result = False
@@ -38,7 +42,7 @@ def is_user_suspend():
     if uid:
         result = is_user_admin_or_suspend(uid, 'isSuspend')
     return jsonify(
-        is_admin = result
+        is_suspend = result
     ), 200
 
 @app.route('/userCreate/', methods=['POST', 'GET'])
@@ -67,7 +71,7 @@ def user_create():
             username=username,
             email=email,
             password=password,
-            credibility=0.5,
+            credibility=5.0,
             created=dt.now(),
             bio=bio,
             admin=False,
@@ -148,7 +152,7 @@ def user_login():
     email = request.form['email']
     password = request.form['password']
     # email = 'test4@test.com'
-    # password = 'test4'
+    # password = 'test'
     if email and password:
         user_info = db.session.query(User.password, User.uid, User.admin).filter(User.email == email).first()
         if user_info and user_info.password == password:
@@ -193,6 +197,7 @@ def fetch_user_identity():
 def add_item_to_watchlist():
     uid = int(request.args.get('uid'))
     item_id = int(request.args.get('item_id'))
+    criteria = float(request.args.get('criteria'))
     if uid and item_id:
         existing_record = Watchlist.query.filter(
             and_(Watchlist.uid == uid,Watchlist.itemid == item_id)
@@ -202,10 +207,15 @@ def add_item_to_watchlist():
                 status = 'fail',
                 reason = 'recording already exist'
             )
+        # r = requests.get('http://localhost:8080/auction/item/' + str(item_id))
+        r = requests.get('http://localhost:23333/')
+        name = r.json()['name']
         new_record = Watchlist(
             uid = uid,
             itemid = item_id,
-            created=dt.now()
+            itemname = name,
+            created = dt.now(),
+            criteria = criteria
         )
         db.session.add(new_record)
         db.session.commit()
@@ -218,12 +228,45 @@ def get_items_in_watchlist():
     uid = int(request.args.get('uid'))
     records = []
     if uid:
-        all_records = db.session.query(Watchlist.itemid).filter(Watchlist.uid == uid).all()
+        all_records = db.session.query(Watchlist.itemid, Watchlist.itemname, Watchlist.criteria).filter(Watchlist.uid == uid).all()
         for record in all_records:
             print(record)
-            records.append(record.itemid)
+            item = {
+                'item_name': record.itemname,
+                'item_id': record.itemid,
+                'criteria': record.criteria
+            }
+            records.append(item)
         return jsonify(
             uid = uid,
             records = records
         )
+
+@app.route('/meetCriteria/')
+def users_meet_criteria():
+    item_id = int(request.args.get('item_id'))
+    price = float(request.args.get('price'))
+    if item_id and price:
+        infos = []
+        all_users = db.session.query(Watchlist.uid, Watchlist.criteria).filter(and_(Watchlist.itemid == item_id, Watchlist.criteria >= price)).all()
+        for user in all_users:
+            print(user)
+            user_info = db.session.query(User).get(user.uid)
+            print(user_info)
+            if user_info:
+                info = {
+                    'uid': user_info.uid,
+                    'username': user_info.username,
+                    'email': user_info.email,
+                    'criteria': user.criteria
+                }
+                infos.append(info)
+        return jsonify(
+            all_users = infos,
+            status = 'success'
+        )
+    return jsonify(
+        status = 'fail'
+    )
+
     

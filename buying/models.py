@@ -19,6 +19,18 @@ class Shoppingcart(db.Model):
         unique=False,
         nullable=False
     )
+    itemname = db.Column(
+        db.String(64),
+        index=False,
+        unique=False,
+        nullable=False
+    )
+    price = db.Column(
+        db.Float,
+        index=False,
+        unique=False,
+        nullable=False
+    )
     created = db.Column(
         db.DateTime,
         index=False,
@@ -44,6 +56,18 @@ class Shophistory(db.Model):
     )
     itemid = db.Column(
         db.Integer,
+        index=False,
+        unique=False,
+        nullable=False
+    )
+    itemname = db.Column(
+        db.String(64),
+        index=False,
+        unique=False,
+        nullable=False
+    )
+    price = db.Column(
+        db.Float,
         index=False,
         unique=False,
         nullable=False

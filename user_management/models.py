@@ -1,6 +1,5 @@
 from . import db
 
-# for test
 class User(db.Model):
     """Data model for user accounts."""
     __tablename__ = 'useraccount'
@@ -80,8 +79,20 @@ class Watchlist(db.Model):
         unique=False,
         nullable=False
     )
+    itemname = db.Column(
+        db.String(64),
+        index=False,
+        unique=False,
+        nullable=False
+    )
     created = db.Column(
         db.DateTime,
+        index=False,
+        unique=False,
+        nullable=False
+    )
+    criteria = db.Column(
+        db.Float,
         index=False,
         unique=False,
         nullable=False
